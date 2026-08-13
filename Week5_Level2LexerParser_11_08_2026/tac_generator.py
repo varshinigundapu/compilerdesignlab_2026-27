@@ -9,7 +9,7 @@ allocate.
 This file is provided for Week 5 -- you do not need to modify it -- 
 your work this week is entirely in tinycstr_lexer.py/tinycstr_parser.py.
 """
-from ast_nodes import Num, Var, Assign, Print, BinOp
+from ast_nodes import Const, Var, Assign, Print, BinOp
 from three_address_code import TripleTAC, BinOpTriple, AssignTriple, PrintTriple
 
 
@@ -37,7 +37,7 @@ class TACGenerator:
             self.program.append(PrintTriple(operand))
         
     def gen_expr(self, node):
-        if isinstance(node, Num):
+        if isinstance(node, Const):
             return str(node.value)
         elif isinstance(node, Var):
             return node.name
