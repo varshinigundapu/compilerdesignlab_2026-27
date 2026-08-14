@@ -26,10 +26,9 @@ is: given a Level 2 program, does the parser produce the AST you'd expect?
 
 The work is staged, each stage adding one piece before the next:
 
-- **Stage 2a** — `double` declarations and real constants. Declare and use an `int`
-  and a `double` *separately* — no mixed-type expressions yet.
+- **Stage 2a** — `double` declarations and real constants. 
 - **Stage 2b** — `char`/`string` declarations and constants, plus all six relational operators
-  (one new AST node, `RelOp`, covers all of them). Still no mixing.
+  (one new AST node, `RelOp`, covers all of them). 
 - **Stage 2c** — casts and the ternary operator. This is where mixed-type expressions first
   become legal (`(double)a / b`), casts need special precedence handling (SLY's `%prec` mechanism), and the ternary operator needs to be right-associative for chained ternaries to nest correctly.
 
@@ -42,20 +41,18 @@ you're extending them, not rewriting them.
 
 - **`ast_nodes.py`** — AST node classes. `Var`, `Assign`, `Print`, `BinOp` are unchanged from
   Level 1. Three things are new this week:
-  - **`Const(value, type)`** — the generic literal/constant node, used for *every* literal kind
+  - **`Const(value, type)`** — the generic constant node, used for *every* constant kind
     (int, double, char, string). Unlike Level 1's old `Num` node (which only ever held numbers
     and inferred nothing about type), `Const` carries an explicit `type` field — a
-    `SymbolTable.DataType` value (`DataType.INT`, `DataType.DOUBLE`, etc.) — set by whichever
-    parser rule builds it.
-  - **`RelOp(op, left, right)`** — one node covering all six relational comparisons, the same
+    `SymbolTable.DataType` value (`DataType.INT`, `DataType.DOUBLE`, etc.) 
+  - **`RelOp(op, left, right)`** — one node covering all six relational operators, the same
     shape as `BinOp`.
   - **`Cast(target_type, expr)`** — `target_type` is a `DataType` value (`DataType.DOUBLE` /
     `DataType.INT`), matching `Const`'s convention.
   - **`Ternary(cond, then_expr, else_expr)`**.
 - **`SymbolTable.py`** — `DataType` now has `INT`, `DOUBLE`, `CHAR`, `STRING`,
   `getSizeOfType()` returns a real byte size for all four (`INT`→4, `DOUBLE`→8, `CHAR`→1,
-  `STRING`→4), and offset assignment (`assignOffsetsToSymbols()`) works for any mix of declared
-  types.
+  `STRING`→4), and offset assignment (`assignOffsetsToSymbols()`).
 - **`Function.py`, `Program.py`, `three_address_code.py`, `tac_generator.py`, `tac_to_mips.py`**
   — the entire Level 1 codegen pipeline from Week 4, **fully implemented** 
 - **`main.py`** — the driver. `-tokens`, `-ast`, `-parse` work fully on any Level 1 or Level 2
@@ -86,10 +83,8 @@ you're extending them, not rewriting them.
 
 `tests/test4.tc` (Stage 2a: `int` + `double`, declared and used separately),
 `tests/test5.tc` (Stage 2b: `char`/`string` declarations, relational operators),
-`tests/test6.tc` (Stage 2c: the corrected version of Slide 6's Example 3, using casts and a
-ternary in place of the unsupported `if`/`else`) — each with golden `.toks`/`.ast` output to
-diff against, and `test4` additionally has a golden `.3ac` file, since it's the only one of the
-three that doesn't touch an AST node `tac_generator.py` can't handle yet.
+`tests/test6.tc` (Stage 2c: using type casting and a ternary) — each with  `.toks`/`.ast` output to
+diff against.
 
 ## Step by step
 
