@@ -69,11 +69,11 @@ The goal is to complete the TinyCStr parser in two stages:
   * Integer constants
   * Identifiers
 * **Stage 1b — Arithmetic expressions**
-  * +
-  * -
-  * *
-  * /
-  * %
+  * `+`
+  * `-`
+  * `*`
+  * `/`
+  * `%`
   * Operator precedence
   * Operator associativity
 
