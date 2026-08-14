@@ -1,35 +1,95 @@
 # Week 5 — Level 2 Lexer + Parser (Stages 2a → 2c)
 
-## What's already provided (do not modify)
+## What is "Level 2" of TinyCStr?
 
-- `ast_nodes.py` — **changed this week** (flagged in the file): `RelOp`, `Cast`, `Ternary`
-  added, fully implemented. `Var`/`Assign`/`Print`/`BinOp` unchanged — note `Num` is discontinued, `Const` used as a generic constant holder for every constant kind (int/double/char/string).
-- `SymbolTable.py` — **changed this week**: `DataType` now includes `DOUBLE`, `CHAR`, `STRING`.
-  `getSizeOfType()` to handle size of all types.
-- `Function.py`, `Program.py`, `three_address_code.py`, `tac_to_mips.py` — unchanged from Week 4.
-- `tac_generator.py` — logic unchanged , but **fixes the ast node use `Const` instead of `Num`
-- `main.py` — **changed this week**: `-3ac`/`-compile` now catch any exception from
-  unimplemented Level 2 codegen . `-tokens`/`-ast`/`-parse` are untouched and fully work on Level 2 programs.
+TinyCStr compiler is developed step by step. Each level adds new features to the previous level, keeping the compiler working at every stage.
 
-## What you need to do
+- **Level 1** (Weeks 2–4): a single `int main(){ ... }` function; `int`-only declarations;
+  assignment and `print` statements; the four arithmetic operators `+ - * /`. By the end of
+  Week 4 this had a complete pipeline: lexer → parser → AST → three-address code → MIPS →
+  runs on SPIM.
+- **Level 2** (this week, plus Weeks 6–7): adds three new *kinds*
+  of language feature on top of Level 1:
+  1. **More types** — `double`, `char`, `string`, alongside the existing `int`.
+  2. **More operators** — relational operators (`< > <= >= == !=`) and the ternary operator
+     (`cond ? a : b`).
+  3. **Explicit casting** — `(double)expr`, `(int)expr` —  *single
+     expression* mix types (e.g. dividing an `int` as a `double`).
 
-- `tinycstr_lexer.py` — Level 1 rules are complete and marked "do not modify." Your work is the
-  three staged Level 2 sections: `DOUBLE`/`REAL_CONST` (2a), `CHAR`/`STRING`/`CHAR_CONST`/`STRING_CONST`/
-  six relational operators (2b), `QUESTION`/`COLON` (2c).
-- `tinycstr_parser.py` — same structure: Level 1 grammar complete and marked "do not modify."
-  Your TODOs are staged 2a → 2b → 2c, ending with the trickiest part of the week — casts and
-  ternary need real precedence work, not just new grammar rules.
+ Every Level 1 program is still a valid Level 2 program; the grammar just accepts more now.
 
-## What's provided to help you
+## What we're trying to do this week
 
-- `docs/level2_token_reference.md` — the exact Level 2 token/grammar additions per stage, why
-  `Num` is discontinued and `Const` for every literal kind
-- `docs/sly_help2.md` — the two genuinely tricky mechanics this week: relational/
-  ternary precedence ordering, and the `%prec` idiom casts need (a plain precedence entry isn't
-  enough on its own). 
-- `tests/` — three `.tc` programs (one per stage) with exact golden tokens/AST — plus one golden
-  3AC file for the Stage 2a program specifically, since it's the only stage whose output doesn't
-  hit a still-unimplemented codegen path.
+Specifically: extend the **lexer and parser only** to recognize and correctly parse Level 2
+syntax, producing the correct AST shape. This week's goal is 
+is: given a Level 2 program, does the parser produce the AST you'd expect?
+
+The work is staged, each stage adding one piece before the next:
+
+- **Stage 2a** — `double` declarations and real constants. Declare and use an `int`
+  and a `double` *separately* — no mixed-type expressions yet.
+- **Stage 2b** — `char`/`string` declarations and constants, plus all six relational operators
+  (one new AST node, `RelOp`, covers all of them). Still no mixing.
+- **Stage 2c** — casts and the ternary operator. This is where mixed-type expressions first
+  become legal (`(double)a / b`), casts need special precedence handling (SLY's `%prec` mechanism), and the ternary operator needs to be right-associative for chained ternaries to nest correctly.
+
+Note: Level 1's lexer/parser rules are already complete and working (carried over from Weeks 2–4) —
+you're extending them, not rewriting them.
+
+## Current file contents
+
+### What's already provided (do not modify)
+
+- **`ast_nodes.py`** — AST node classes. `Var`, `Assign`, `Print`, `BinOp` are unchanged from
+  Level 1. Three things are new this week:
+  - **`Const(value, type)`** — the generic literal/constant node, used for *every* literal kind
+    (int, double, char, string). Unlike Level 1's old `Num` node (which only ever held numbers
+    and inferred nothing about type), `Const` carries an explicit `type` field — a
+    `SymbolTable.DataType` value (`DataType.INT`, `DataType.DOUBLE`, etc.) — set by whichever
+    parser rule builds it.
+  - **`RelOp(op, left, right)`** — one node covering all six relational comparisons, the same
+    shape as `BinOp`.
+  - **`Cast(target_type, expr)`** — `target_type` is a `DataType` value (`DataType.DOUBLE` /
+    `DataType.INT`), matching `Const`'s convention.
+  - **`Ternary(cond, then_expr, else_expr)`**.
+- **`SymbolTable.py`** — `DataType` now has `INT`, `DOUBLE`, `CHAR`, `STRING`,
+  `getSizeOfType()` returns a real byte size for all four (`INT`→4, `DOUBLE`→8, `CHAR`→1,
+  `STRING`→4), and offset assignment (`assignOffsetsToSymbols()`) works for any mix of declared
+  types.
+- **`Function.py`, `Program.py`, `three_address_code.py`, `tac_generator.py`, `tac_to_mips.py`**
+  — the entire Level 1 codegen pipeline from Week 4, **fully implemented** 
+- **`main.py`** — the driver. `-tokens`, `-ast`, `-parse` work fully on any Level 1 or Level 2
+  program. `-3ac` and `-compile` work only for Level 1 programs
+
+### What you need to do
+
+- **`tinycstr_lexer.py`** — Level 1 token rules (INT, ID, NUMBER, PRINT, ASSIGN, arithmetic
+  operators, etc.) are complete; leave them alone. The full Level 2 token set is already
+  *declared* in `tokens = {...}` (`DOUBLE`, `REAL_CONST`, `CHAR`, `STRING`, `CHAR_CONST`,
+  `STRING_CONST`, `LT`/`GT`/`LE`/`GE`/`EQ`/`NE`, `QUESTION`, `COLON`) — your job is writing the
+  actual lexer *rules* for them, staged 2a → 2b → 2c per the comments in the file.
+- **`tinycstr_parser.py`** — same structure: Level 1 grammar is complete, your TODOs are the
+  Level 2 grammar rules (new `decl` alternatives for each type, new `expr` alternatives for
+  constants/relational operators/casts/ternary), plus the trickiest part of the week — extending
+  the `precedence` tuple correctly for relational operators, ternary, and casts.
+
+### Documentation
+
+- **`docs/level2_token_reference.md`** — the exact Level 2 token/grammar additions per stage,
+  
+- **`docs/sly_help2.md`** — the SLY-specific mechanics this week's grammar work actually needs:
+  precedence-tuple ordering for relational/ternary operators, and the `%prec` idiom casts
+  require (a plain precedence entry isn't enough on its own to get `(double)a/b` parsing
+  correctly).
+
+### Tests
+
+`tests/test4.tc` (Stage 2a: `int` + `double`, declared and used separately),
+`tests/test5.tc` (Stage 2b: `char`/`string` declarations, relational operators),
+`tests/test6.tc` (Stage 2c: the corrected version of Slide 6's Example 3, using casts and a
+ternary in place of the unsupported `if`/`else`) — each with golden `.toks`/`.ast` output to
+diff against, and `test4` additionally has a golden `.3ac` file, since it's the only one of the
+three that doesn't touch an AST node `tac_generator.py` can't handle yet.
 
 ## Step by step
 
@@ -40,11 +100,7 @@
    diff tests/test4.tc.toks tests/test4.toks.expected.txt
    diff tests/test4.tc.ast tests/test4.ast.expected.txt
    ```
-   If your Week 4 `tac_generator.py` TODOs are already done, also check:
-   ```bash
-   python main.py -3ac tests/test4.tc
-   diff tests/test4.tc.3ac tests/test4.3ac.expected.txt
-   ```
+ 
 3. Implement Stage 2b. Test against `tests/test5.tc` the same way (tokens/AST only)
 
 4. Read `docs/sly_help2.md` 5 carefully before starting Stage 2c — casts are the
@@ -57,4 +113,4 @@
 
 ## Getting unstuck
 
-If you're still stuck, post in the Week 5 GitHub Issues.
+If you're still stuck, post in the Week 5 GitHub Issues. 
