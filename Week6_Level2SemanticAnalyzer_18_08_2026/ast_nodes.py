@@ -2,7 +2,7 @@
 TinyCStr AST node definitions -- fully implemented.
 
 WEEK 6 CHANGE: every node now accepts an optional `lineno`
-(defaults to None if not given) to report
+(defaults to None if not given) which will be used to report
 undeclared-variable and type-mismatch errors with a line number
 in Semantic Analysis
 
