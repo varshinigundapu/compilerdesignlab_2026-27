@@ -61,9 +61,8 @@ assignment) — useful both as a test case and as a template for your own take-h
 
 ## Step by step
 
-1. Read `docs/lineno_and_type_checking.md` fully before writing code — the `(node, type)` return
-   convention is the one thing that, if misunderstood, makes every subsequent TODO harder than
-   it needs to be.
+1. Read `docs/lineno_and_type_checking.md` fully before writing code — mainly the `(node, type)` return
+   convention.
 2. Implement `check_var()` and the undeclared-variable half of `check_assign_stmt()` first — the
    simplest sub-task, and everything else depends on symbol lookups working correctly.
 3. Implement `check_binop()`. Test:
