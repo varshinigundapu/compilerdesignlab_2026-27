@@ -1,4 +1,4 @@
-"""
+"""cat
 TinyCStr Level 2 Parser (Stages 2a -> 2c)
 
 Read docs/level2_token_reference.md and docs/sly_help2.md

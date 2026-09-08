@@ -93,7 +93,7 @@ class TinyCStrLexer(Lexer):
     # TODO(week-5, stage-2b): CHAR_CONST -- a single character in single
     # quotes, e.g. 'x'. Function-style rule, strip the surrounding
     # quotes before returning (t.value = t.value[1:-1]).
-    @_(r" '[^']'")
+    @_(r"'[^']'")
     def CHAR_CONST(self,t):
         t.value=t.value[1:-1]
         return t
@@ -101,7 +101,7 @@ class TinyCStrLexer(Lexer):
     # characters in double quotes, e.g. "hello". Function-style rule,
     # strip the surrounding quotes the same way. (No escape-sequence
     # handling needed for Level 2 -- \" inside a string is out of scope.)
-    @_(r' "[^"]*" ')
+    @_(r'"[^"]*"')
     def STRING_CONST(self,t):
         t.value=t.value[1:-1]
         return t
