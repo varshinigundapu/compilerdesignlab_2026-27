@@ -1,0 +1,25 @@
+1 type error(s) found:
+  line 10: invalid operands for relational operator '<': DataType.INT and DataType.STRING
+
+Type-checked AST (with any inserted casts):
+Function main
+  Assign
+    Var(a)
+    Const(5,DataType.INT)
+  Assign
+    Var(b)
+    Const(varsha,DataType.STRING)
+  Assign
+    Var(c)
+    Const(x,DataType.CHAR)
+  Assign
+    Var(s)
+    Const(hello,DataType.STRING)
+  Print
+    RelOp(<)
+      Var(a)
+      Var(b)
+  Print
+    Var(c)
+  Print
+    Var(s)
