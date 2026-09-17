@@ -585,7 +585,7 @@ class MIPSGenerator:
     def gen_assign(self, triple):
         dest_type = self.symbol_table.getSymbol(triple.dest).getDataType()
         reg, _ = self.load(triple.arg1, dest_type)
-        self.store_to_var(triple.dest, reg, dest_type)
+        self.store_to_var(reg, triple.dest, dest_type)
         self.free_reg(reg, dest_type)
         """
         TODO(week-7): look up triple.dest's declared type via
